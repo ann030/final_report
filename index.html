@@ -43,6 +43,14 @@
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-1">
       <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm sticky top-20">
+        <div class="flex gap-2 mb-4 justify-end px-2">
+    <button onclick="exportAllData()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition-all flex items-center gap-1">
+        🎒 打包資料
+    </button>
+    <button onclick="importAllData()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition-all flex items-center gap-1">
+        📥 還原資料
+    </button>
+</div>
         <h2 class="text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2"><span class="w-2 h-5 bg-indigo-500 rounded-full"></span>新增單字</h2>
         <p class="text-[11px] text-gray-400 mb-3">輸入單字建立卡片，系統將自動納入遺忘曲線排程。</p>
         <div class="flex gap-2 mb-4">
@@ -910,7 +918,40 @@ document.getElementById('notesSearch').oninput = function() {
     if (foundCount === 0) {
         list.innerHTML = '<p class="text-xs text-gray-400 text-center py-10">找不到任何符合關鍵字的講義或連結 🥲</p>';
     }
-};
+};// 🎒 執行全站 LocalStorage 打包複製
+function exportAllData() {
+    try {
+        const packet = {
+            words: localStorage.getItem('hub_words_data') || '[]',
+            folders: localStorage.getItem('hub_folders_data') || '[]',
+            timestamp: new Date().getTime()
+        };
+        const jsonString = JSON.stringify(packet);
+        navigator.clipboard.writeText(jsonString).then(() => {
+            alert('🎒 打包成功！全站單字與資料夾已複製到你的剪貼簿。\n請趕快去貼到雲端硬碟或記事本存起來！');
+        }).catch(err => {
+            alert('複製失敗，請手動複製這串文字：' + jsonString);
+        });
+    } catch (e) {
+        alert('打包出錯了：' + e.message);
+    }
+}
+
+// 📥 執行全站 LocalStorage 貼上還原
+function importAllData() {
+    const rawData = prompt('📥 請貼上你之前打包的資料字串：');
+    if (!rawData) return;
+    try {
+        const packet = JSON.parse(rawData);
+        if (packet.words) localStorage.setItem('hub_words_data', packet.words);
+        if (packet.folders) localStorage.setItem('hub_folders_data', packet.folders);
+        alert('🎉 還原成功！網頁即將重新整理，迎回你的單字大軍！');
+        window.location.reload(); 
+    } catch (e) {
+        alert('❌ 還原失敗！請確認貼上的資料是否完整且正確。');
+    }
+}
+
 </script>
 </body>
 </html>
